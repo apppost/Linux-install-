@@ -4,19 +4,18 @@ set -e
 
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
-RED='\033[0;31m'
 NC='\033[0m'
 
 echo -e "${BLUE}=== Alpine Linux XFCE Installer ===${NC}"
 
-echo -e "${GREEN}[1/6] Cập nhật và cài đặt các gói cần thiết...${NC}"
+echo -e "${GREEN}[1/6] Updating and installing required packages...${NC}"
 pkg update -y && pkg upgrade -y
 pkg install -y proot-distro wget curl
 
-echo -e "${GREEN}[2/6] Cài đặt Alpine Linux...${NC}"
+echo -e "${GREEN}[2/6] Installing Alpine Linux...${NC}"
 proot-distro install alpine
 
-echo -e "${GREEN}[3/6] Cấu hình Alpine Linux...${NC}"
+echo -e "${GREEN}[3/6] Configuring Alpine Linux...${NC}"
 cat > /data/data/com.termux/files/usr/var/lib/proot-distro/installed-rootfs/alpine/root/setup.sh << 'EOF'
 #!/bin/sh
 
@@ -50,7 +49,6 @@ VNCEOF
 
 chmod +x ~/.vnc/xstartup
 
-# Tạo script khởi động VNC dễ dùng
 cat > /usr/local/bin/startvnc << 'STARTEOF'
 #!/bin/sh
 export USER=root
@@ -59,34 +57,30 @@ export XDG_RUNTIME_DIR=/tmp/runtime-root
 mkdir -p $XDG_RUNTIME_DIR
 chmod 700 $XDG_RUNTIME_DIR
 
-# Kill VNC servers cũ nếu có
 vncserver -kill :1 2>/dev/null || true
 
-# Khởi động VNC server
 vncserver :1 -geometry 1280x720 -depth 24 -localhost no
 
 echo "================================"
-echo "VNC Server đã khởi động!"
-echo "Địa chỉ: localhost:5901"
-echo "Mật khẩu: 123456"
+echo "VNC Server started!"
+echo "Address: localhost:5901"
+echo "Password: 123456"
 echo "================================"
-echo "Sử dụng VNC Viewer để kết nối"
-echo "Để dừng VNC: vncserver -kill :1"
+echo "Use VNC Viewer to connect"
+echo "To stop VNC: vncserver -kill :1"
 STARTEOF
 
 chmod +x /usr/local/bin/startvnc
 
-echo "Cài đặt hoàn tất!"
+echo "Installation completed!"
 EOF
 
 chmod +x /data/data/com.termux/files/usr/var/lib/proot-distro/installed-rootfs/alpine/root/setup.sh
 
-# Chạy script setup trong Alpine
-echo -e "${GREEN}[4/6] Cài đặt XFCE, VNC và Chromium...${NC}"
+echo -e "${GREEN}[4/6] Installing XFCE, VNC and Chromium...${NC}"
 proot-distro login alpine -- /root/setup.sh
 
-# Tạo lệnh khởi động nhanh
-echo -e "${GREEN}[5/6] Tạo lệnh khởi động...${NC}"
+echo -e "${GREEN}[5/6] Creating startup commands...${NC}"
 cat > $PREFIX/bin/alpine << 'ALPINEEOF'
 #!/data/data/com.termux/files/usr/bin/bash
 proot-distro login alpine
@@ -100,22 +94,23 @@ VNCSTARTEOF
 chmod +x $PREFIX/bin/alpine
 chmod +x $PREFIX/bin/alpine-vnc
 
-# Hoàn tất
-echo -e "${GREEN}[6/6] Hoàn tất cài đặt!${NC}"
+echo -e "${GREEN}[6/6] Starting VNC Server...${NC}"
+alpine-vnc
+
 echo ""
 echo -e "${BLUE}================================${NC}"
-echo -e "${GREEN}Cài đặt thành công!${NC}"
+echo -e "${GREEN}Installation completed!${NC}"
 echo -e "${BLUE}================================${NC}"
 echo ""
-echo "Cách sử dụng:"
-echo "1. Khởi động Alpine: alpine"
-echo "2. Khởi động VNC: alpine-vnc"
+echo "Usage:"
+echo "1. Start Alpine: alpine"
+echo "2. Start VNC: alpine-vnc"
 echo ""
-echo "Thông tin VNC:"
-echo "  - Địa chỉ: localhost:5901"
-echo "  - Mật khẩu: 123456"
+echo "VNC Info:"
+echo "  - Address: localhost:5901"
+echo "  - Password: 123456"
 echo ""
-echo "Cài đặt VNC Viewer trên thiết bị để kết nối:"
+echo "Install VNC Viewer on your device:"
 echo "  https://play.google.com/store/apps/details?id=com.realvnc.viewer.android"
 echo ""
 echo -e "${BLUE}================================${NC}"
